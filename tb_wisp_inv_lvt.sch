@@ -49,7 +49,7 @@ value=".lib \\\\$::SKYWATER_MODELS\\\\/sky130.lib.spice tt
 .param mc_pr_switch=1
 
 "}
-C {HPLP-UHF-RFID-SKY130/wisp_inv_lvt.sym} 1460 -895 0 0 {name=X1 m=1
+C {wisp_inv_lvt.sym} 1460 -895 0 0 {name=X1 m=1
 + W_N=1 L_N=0.35 W_P=3.5 L_P=0.35}
 C {devices/capa.sym} 1670 -880 0 0 {name=C2
 m=1
@@ -63,7 +63,7 @@ C {devices/vsource.sym} 1240 -740 0 0 {name=V3 value="SIN(0 1 915e6)"}
 C {devices/gnd.sym} 1240 -700 0 0 {name=l8 lab=GND}
 C {devices/lab_pin.sym} 1240 -785 0 0 {name=l9 sig_type=std_logic lab=VCARRIER}
 C {devices/vsource.sym} 1365 -740 0 0 {name=V2 value="PULSE(0.18 1.8 0 15n 15n 140n 280n 0)"}
-C {HPLP-UHF-RFID-SKY130/wisp_inv_lvt.sym} 1555 -895 0 0 {name=X2 m=1
+C {wisp_inv_lvt.sym} 1555 -895 0 0 {name=X2 m=1
 + W_N=1 L_N=0.35 W_P=3.5 L_P=0.35}
 C {devices/lab_pin.sym} 1540 -920 1 0 {name=l2 sig_type=std_logic lab=VOUT}
 C {devices/lab_pin.sym} 1645 -920 1 0 {name=l3 sig_type=std_logic lab=VOUT_2}
