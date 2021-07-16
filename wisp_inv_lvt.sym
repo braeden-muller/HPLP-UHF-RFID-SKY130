@@ -26,5 +26,6 @@ dir=out}
 A 4 50 -25 5 180 360 {}
 T {p:@W_P / @L_P} 35 -50 0 0 0.1 0.1 {}
 T {n:@W_N / @L_N} 35 -42.5 0 0 0.1 0.1 {}
-T {@name} 15 -27.5 0 0 0.1 0.1 {}
-T {@symname} 65 -17.5 0 0 0.2 0.2 {layer=13 hcenter=true}
+T {@name} 20 -27.5 0 0 0.1 0.1 {}
+T {@symname} 35 -17.5 0 0 0.2 0.2 {layer=13 hcenter=false}
+T {LVT} 15 -20 1 0 0.1 0.1 {layer=4}
