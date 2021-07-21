@@ -1,1 +1,7 @@
 TODO.txt
+*.mti
+*.mpf
+*.qdb
+*.qpg
+*.qtl
+rtl/verilog/work
