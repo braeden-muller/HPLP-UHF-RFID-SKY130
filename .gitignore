@@ -4,4 +4,5 @@ TODO.txt
 *.qdb
 *.qpg
 *.qtl
+*.wlf
 rtl/verilog/work
