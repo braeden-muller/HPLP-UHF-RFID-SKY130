@@ -12,17 +12,19 @@ module SPI_dummy_secondary (mosi, miso, sclk, cs);
     output miso;    // Main-In Secondary-Out
     input  sclk;    // Serial Clock
     input  cs;      // Chip Select (Active low)
+    //reg miso;
     reg [2:0] state;
     reg [3:0] bit_count;
-    reg [7:0] shift_reg;
+    reg [7:0] incoming;
+    reg [7:0] outgoing;
     reg [7:0] internal_regs [0:45]; // 0x45 = 2D
     reg [7:0] rw_addr;
 
-    localparam  AWAIT      = 3'b000,
-                WRITE_ADDR = 3'b101,
-                READ_ADDR  = 3'b111,
-                WRITE_DATA = 3'b100,
-                READ_DATA  = 3'b110;
+    localparam  AWAIT = 4'h0,
+                READ_CMD = 4'h1,
+                READ_ADDR = 4'h2,
+                WRITE_CMD = 4'h3,
+                WRITE_ADDR = 4'h4;
 
     // Very simplified ADXL362 register layout
     // 0x0E, 0x0F - X-Axis registers
@@ -37,6 +39,8 @@ module SPI_dummy_secondary (mosi, miso, sclk, cs);
         state <= AWAIT;
         rw_addr <= 8'h00;
         bit_count <= 4'h0;
+        incoming <= 8'h00;
+        outgoing <= 8'h00;
         internal_regs[14] <= 8'hDE; // [0x0E]
         internal_regs[15] <= 8'hAD; // [0x0F]
         internal_regs[16] <= 8'hBE; // [0x10]
@@ -51,74 +55,70 @@ module SPI_dummy_secondary (mosi, miso, sclk, cs);
     // Very simplified ADXL362 commands
     // 0x0A - Write register
     // 0x0B - Read register
+    wire [7:0] next_incoming;
+    assign next_incoming = {incoming[6:0], mosi};
 
-    assign miso = shift_reg[7];
+    assign miso = (cs == 1'b1) ? 1'bz : outgoing[7];
 
     // Main clocked operation
     always @ (posedge sclk) begin
-        // Chip-select pulled low means the main wants to communicate
-        if (cs == 1'b0) begin
-            // Check for state transition every 8 cycles
-            if (bit_count == 4'h7) begin
-                // Reset bit count so it can count up the next byte
-                bit_count <= 4'h0;
+        // Not selected
+        if (cs == 1'b1) begin
+            state <= AWAIT;
+            bit_count <= 4'h0;
+            incoming <= 8'h00;
+            outgoing <= 8'h00;
+            rw_addr <= 8'h00;
+        end
+        // Selected
+        else begin
+            incoming <= next_incoming;
 
-                // Manage the state transition
-                case (state)
-                    // Check for a valid command
+            if (bit_count == 4'h7) begin
+                bit_count <= 4'h0;
+                case(state)
                     AWAIT: begin
-                        case (shift_reg)
-                            8'h0A: state <= WRITE_ADDR;
-                            8'h0B: state <= READ_ADDR;
-                            default: state <= AWAIT;
-                        endcase
-                        rw_addr <= rw_addr;
-                        shift_reg <= {shift_reg[6:0], mosi};
-                        end
-                    // Load the specified write address
-                    WRITE_ADDR: begin
-                        state <= WRITE_DATA;
-                        rw_addr <= shift_reg;
-                        shift_reg <= {shift_reg[6:0], mosi};
-                        end
-                    // Load the specified read address
+                        outgoing <= 8'h00;
+                        rw_addr <= 8'h00;
+                        if (next_incoming == 8'h0A)
+                            state <= WRITE_CMD;
+                        else if (next_incoming == 8'h0B)
+                            state <= READ_CMD;
+                        else
+                            state <= AWAIT;
+                    end
+                    READ_CMD: begin
+                        outgoing <= internal_regs[next_incoming];
+                        rw_addr <= next_incoming + 8'h01;
+                        state <= READ_ADDR;
+                    end
                     READ_ADDR: begin
-                        state <= READ_DATA;
-                        rw_addr <= shift_reg;
-                        shift_reg <= {shift_reg[6:0], mosi};
-                        end
-                    // Write data to reg at address, and increment
-                    WRITE_DATA: begin
-                        state <= WRITE_DATA;
-                        internal_regs[rw_addr] <= shift_reg; // Yes, I know it's an implied latch. No, I will not fix it.
-                        rw_addr <= rw_addr + 8'h1;
-                        shift_reg <= {shift_reg[6:0], mosi};
-                        end
-                    // Read data from reg at address, and increment
-                    READ_DATA: begin
-                        state <= READ_DATA;
-                        rw_addr <= rw_addr + 8'h1;
-                        shift_reg <= internal_regs[rw_addr];
-                        end
-                    default: begin
+                        outgoing <= internal_regs[rw_addr];
+                        rw_addr <= rw_addr + 8'h01;
+                        state <= READ_ADDR;
+                    end
+                    WRITE_CMD: begin
+                        outgoing <= 8'h00;
+                        rw_addr <= next_incoming;
+                        state <= WRITE_ADDR;
+                    end
+                    WRITE_ADDR: begin
+                        internal_regs[rw_addr] <= next_incoming;
+                        outgoing <= 8'h00;
+                        rw_addr <= 8'h00;
                         state <= AWAIT;
-                        rw_addr <= rw_addr;
-                        shift_reg <= {shift_reg[6:0], mosi};
+                    end
+                    default: begin
+                        outgoing <= 8'h00;
+                        rw_addr <= 8'h00;
+                        state <= AWAIT;
                     end
                 endcase
             end
             else begin
-                shift_reg <= {shift_reg[6:0], mosi};
-                rw_addr <= rw_addr;
                 bit_count <= bit_count + 4'h1;
-                state <= state;
+                outgoing <= {outgoing[6:0], 1'b0};
             end
-        end // !cs
-        else begin
-            state <= AWAIT;
-            bit_count <= 4'h0;
-            shift_reg <= 8'h0;
-            rw_addr <= 8'h0;
         end
-    end // always
+    end
 endmodule // SPI_dummy_secondary
