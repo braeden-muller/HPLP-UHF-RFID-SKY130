@@ -1,35 +1,36 @@
-module rfid_top ();
+module rfid_top (clk, rst, sck, mosi, miso, cs, scl, sda);
     // WISHBONE CONNECTIONS
-    wire        clk;            // System Clock
-    wire        rst;            // System Async Active-Low Reset
-    wire        cyc;            // Cycle
-    wire [1:0]  stb;            // Strobe(s)
-    wire [2:0]  adr;            // Address
-    wire        we;             // Write enable
-    wire [7:0]  dat;            // Data input from rfid_controller
+    input        clk;            // System Clock
+    input        rst;            // System Async Active-Low Reset
+    wire         cyc;            // Cycle
+    wire [1:0]   stb;            // Strobe(s)
+    wire [2:0]   adr;            // Address
+    wire         we;             // Write enable
+    wire [7:0]   dat;            // Data input from rfid_controller
 
-    wire [7:0]  dat_o_spi;      // Data output from spi
-    wire        ack_o_spi;      // Normal bus termination from spi
-    wire        inta_o_spi;     // Interrupt output from spi
+    wire [7:0]   dat_o_spi;      // Data output from spi
+    wire         ack_o_spi;      // Normal bus termination from spi
+    wire         inta_o_spi;     // Interrupt output from spi
 
-    wire [7:0]  dat_o_i2c;      // Data output from i2c
-    wire        ack_o_i2c;      // Normal bus termination from i2c
-    wire        inta_o_i2c;     // Interrupt output from i2c
+    wire [7:0]   dat_o_i2c;      // Data output from i2c
+    wire         ack_o_i2c;      // Normal bus termination from i2c
+    wire         inta_o_i2c;     // Interrupt output from i2c
 
     // SPI CONNECTIONS
-    wire        sck;
-    wire        mosi;
-    wire        miso;
+    output       sck;
+    output       mosi;
+    output       miso;
+    output [1:0] cs;
 
     // I2C CONNECTIONS
-    wire        scl;
-    wire        sda;
-    wire        scl_pad_i;
-    wire        scl_pad_o;
-    wire        scl_padoen_oe;
-    wire        sda_pad_i;
-    wire        sda_pad_o;
-    wire        sda_padoen_oe;
+    output       scl;
+    output       sda;
+    wire         scl_pad_i;
+    wire         scl_pad_o;
+    wire         scl_padoen_oe;
+    wire         sda_pad_i;
+    wire         sda_pad_o;
+    wire         sda_padoen_oe;
 
     // Force compiler to insert tri-state buffers
     assign scl = scl_padoen_oe ? 1'bz : scl_pad_o;
