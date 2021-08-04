@@ -7,14 +7,23 @@ module rfid_top (clk, rst, sck, mosi, miso, cs, scl, sda);
     wire [2:0]   adr;            // Address
     wire         we;             // Write enable
     wire [7:0]   dat;            // Data input from rfid_controller
-
+    // |- wishbone output from spi
     wire [7:0]   dat_o_spi;      // Data output from spi
     wire         ack_o_spi;      // Normal bus termination from spi
     wire         inta_o_spi;     // Interrupt output from spi
-
+    // |- wishbone output from i2c
     wire [7:0]   dat_o_i2c;      // Data output from i2c
     wire         ack_o_i2c;      // Normal bus termination from i2c
     wire         inta_o_i2c;     // Interrupt output from i2c
+    // |- multiplexed wishbone output from comm controllers to state controller
+    wire        dai_sel;         // Data-Ack-Inta returning select
+    wire [7:0]  dat_o;           // data (returning)
+    wire        ack_o;           // acknowledge (returning)
+    wire        inta_o;          // interrupt_a (returning)
+
+    assign dat_o = (dai_sel == 1'b0) ? dat_o_spi : dat_o_i2c;
+    assign ack_o = (dai_sel == 1'b0) ? ack_o_spi : ack_o_i2c;
+    assign inta_o = (dai_sel == 1'b0) ? inta_o_spi : inta_o_i2c;
 
     // SPI CONNECTIONS
     output       sck;
@@ -37,6 +46,21 @@ module rfid_top (clk, rst, sck, mosi, miso, cs, scl, sda);
     assign sda = sda_padoen_oe ? 1'bz: sda_pad_o;
     assign scl_pad_i = scl;
     assign sda_pad_i = sda;
+
+    rfid_state_controller rfid_controller (
+        .clk_i          ( clk           ), // clock
+        .rst_i          ( rst           ), // reset (asynchronous active low)
+        .cyc_o          ( cyc           ), // cycle
+        .stb_o          ( stb           ), // strobe
+        .adr_o          ( adr           ), // address
+        .we_o           ( we            ), // write enable
+        .dat_o          ( dat           ), // data
+        .dat_i          ( dat_o         ), // data (returning)
+        .ack_i          ( ack_o         ), // ack (returning)
+        .inta_i         ( inta_o        ), // inta (returning)
+        .dat_i_sel      ( dai_sel       ), // data-ack-inta returning select
+        .spi_cs         ( cs            )
+    );
 
     simple_spi_top spi_controller (
         .clk_i          ( clk           ), // clock
