@@ -5,4 +5,9 @@ TODO.txt
 *.qpg
 *.qtl
 *.wlf
+*.bak
 rtl/verilog/work
+rtl/verilog/db
+rtl/verilog/incremental_db
+rtl/verilog/output_files
+rtl/verilog/simulation

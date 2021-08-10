@@ -10,9 +10,9 @@ module rfid_state_controller (
     input  wire       dat_i,
     input  wire       ack_i,
     input  wire       inta_i,
-    output reg        dat_i_sel
+    output reg        dat_i_sel,
     // SPI
-    output reg  [1:0] spi_cs;
+    output reg  [1:0] spi_cs
 );
 
     reg [3:0] count;
