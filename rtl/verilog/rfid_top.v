@@ -1,4 +1,4 @@
-module rfid_top (clk, rst, sck, mosi, miso, cs, scl, sda);
+module rfid_top (clk, rst, sck, mosi, miso, cs, scl, sda, debug_state);
     // WISHBONE CONNECTIONS
     input        clk;            // System Clock
     input        rst;            // System Async Active-Low Reset
@@ -41,6 +41,8 @@ module rfid_top (clk, rst, sck, mosi, miso, cs, scl, sda);
     wire         sda_pad_o;
     wire         sda_padoen_oe;
 
+    output [7:0] debug_state;
+
     // Force compiler to insert tri-state buffers
     assign scl = scl_padoen_oe ? 1'bz : scl_pad_o;
     assign sda = sda_padoen_oe ? 1'bz: sda_pad_o;
@@ -59,7 +61,8 @@ module rfid_top (clk, rst, sck, mosi, miso, cs, scl, sda);
         .ack_i          ( ack_o         ), // ack (returning)
         .inta_i         ( inta_o        ), // inta (returning)
         .dat_i_sel      ( dai_sel       ), // data-ack-inta returning select
-        .spi_cs         ( cs            )
+        .spi_cs         ( cs            ), // spi chip select
+        .debug_state    ( debug_state   )  // debug purposes
     );
 
     simple_spi_top spi_controller (

@@ -10,15 +10,19 @@ module fpga_top (
     output wire GPIO_011,   // SCL
     output wire GPIO_013    // CS1
 );
+    wire [1:0] CHIPSEL;
+    assign CHIPSEL = {GPIO_05, GPIO_013};
 
-	assign LED[0] = KEY[0];
-	assign LED[1] = KEY[1];
-	assign LED[2] = 1'b0;
-	assign LED[3] = 1'b1;
-	assign LED[4] = 1'b0;
-	assign LED[5] = 1'b1;
-	assign LED[6] = 1'b0;
-	assign LED[7] = 1'b1;
-	
+    rfid_top main_module (
+        .clk    ( CLOCK_50  ),
+        .rst    ( KEY[0]    ),
+        .sck    ( GPIO_07   ),
+        .mosi   ( GPIO_01   ),
+        .miso   ( GPIO_03   ),
+        .cs     ( CHIPSEL   ),
+        .scl    ( GPIO_011  ),
+        .sda    ( GPIO_09   ),
+        .debug_state ( LED  )
+    );
 
 endmodule
