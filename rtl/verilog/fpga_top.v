@@ -11,7 +11,8 @@ module fpga_top (
     output wire GPIO_013    // CS1
 );
     wire [1:0] CHIPSEL;
-    assign CHIPSEL = {GPIO_05, GPIO_013};
+    assign GPIO_05 = CHIPSEL[1];
+    assign GPIO_013 = CHIPSEL[0];
 
     rfid_top main_module (
         .clk    ( CLOCK_50  ),

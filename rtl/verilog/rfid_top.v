@@ -28,7 +28,7 @@ module rfid_top (clk, rst, sck, mosi, miso, cs, scl, sda, debug_state);
     // SPI CONNECTIONS
     output       sck;
     output       mosi;
-    output       miso;
+    input        miso;
     output [1:0] cs;
 
     // I2C CONNECTIONS
@@ -92,7 +92,7 @@ module rfid_top (clk, rst, sck, mosi, miso, cs, scl, sda, debug_state);
         .wb_stb_i       ( stb[1]        ), // stobe/core select signal
         .wb_cyc_i       ( cyc           ), // valid bus cycle input
         .wb_ack_o       ( ack_o_i2c     ), // bus cycle acknowledge output
-        .wb_inta_o      ( ack_o_inta    ), // interrupt request signal output
+        .wb_inta_o      ( inta_o_i2c    ), // interrupt request signal output
         .scl_pad_i      ( scl_pad_i     ), // SCL-line input
         .scl_pad_o      ( scl_pad_o     ), // SCL-line output (always 1'b0)
         .scl_padoen_o   ( scl_padoen_oe ), // SCL-line output enable (active low)
