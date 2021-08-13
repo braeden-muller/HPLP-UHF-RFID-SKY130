@@ -12,7 +12,7 @@ module rfid_state_controller (
     input  wire       inta_i,     // Wishbone interrupt input (ignored)
     output wire       dat_i_sel,  // Select signal for Wishbone data and ack inputs
     // SPI
-    output wire [1:0] spi_cs,     // Chip selecty signal for SPI devices
+    output wire [1:0] spi_cs,     // Chip select signal for SPI devices
     output reg  [7:0] debug_state // Debugging data to be passed upwards
 );
 
@@ -50,14 +50,21 @@ module rfid_state_controller (
                 cycle <= 1'b1;
 
                 // Determine the command
-                case (state)                       // SPI_CS DAT_I_SEL STRB_TRGT ADDRESS WRITE_EN DATA      | NOTES
-                    4'h0:    command <= 17'h1C150; // 11     0         0         000     1        0101 0000 | Configure SPI master communication
-                    4'h1:    command <= 17'h000FF; //
+                case (state)                       // VALID SPI_CS DAT_I_SEL STRB_TRGT ADDRESS WRITE_EN DATA      | NOTES
+                    4'h0:    command <= 17'h1C150; // 1     11     0         0         000     1        0101 0000 | WB-W SPI Master SPCR Communication Configuration
+                    4'h1:    command <= 17'h1450A; // 1     01     0         0         010     1        0000 1010 | WB-W SPI Master SPDR ADXL362 Write Command
+                    4'h2:    command <= 17'h1452D; // 1     01     0         0         010     1        0010 1101 | WB-W SPI Master SPDR ADXL362 Config Register Address
+                    4'h3:    command <= 17'h14502; // 1     01     0         0         010     1        0000 0010 | WB-W SPI Master SPDR ADXL362 Begin Measurement
+                    4'h4:    command <= 17'h14200; // 1     01     0         0         001     0        0000 0000 | WB-R SPI Master SPSR
                     default: command <= 17'h00000;
                 endcase
                 // Determine next state
                 case (state)
                     4'h0:    state <= 4'h1;
+                    4'h1:    state <= 4'h2;
+                    4'h2:    state <= 4'h3;
+                    4'h3:    state <= 4'h4;
+                    4'h4:    state <= (dat_i[2] == 1'b1) ? 4'h5 : 4'h4; // Only advance when SPI write queue is empty
                     default: state <= state;
                 endcase
             end
